@@ -84,10 +84,10 @@ int main() {
 
             double elapsed = seconds + microseconds * 1e-6;
 
-            sumaTiempos += elapsed;
+            sumaTiempos += elapsed; //Sumatoria de tiempos
         }
 
-        double tiempoPromedio = sumaTiempos / 10;
+        double tiempoPromedio = sumaTiempos / 10; //Calculo de promedios
         double distanciaPromedio = sumaDistancia / 10;
 
         // Calcular la cantidad de pares examinados
