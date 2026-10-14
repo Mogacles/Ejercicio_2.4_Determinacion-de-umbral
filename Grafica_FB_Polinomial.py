@@ -1,8 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-datos = pd.read_csv("resultados_fuerza_bruta.csv")
-regresion = pd.read_csv("resultados_regresion.csv")
+datos = pd.read_csv("resultados_fuerza_bruta_polinomio.csv")
+regresion = pd.read_csv("resultados_regresion_polinomial.csv")
 
 plt.scatter(
     datos["Puntos"],

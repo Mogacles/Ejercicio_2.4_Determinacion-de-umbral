@@ -201,7 +201,7 @@ int main() {
         double sumaTiempos = 0;
         double sumaDistancia = 0;
 
-        for(int k = 0; k < 10; k++){ // Repetir el calculo de determinada cantidad de puntos
+        for(int k = 0; k < 50; k++){ // Repetir el calculo de determinada cantidad de puntos
             for(int i = 0; i < n; ++i){ // Creacion de puntos aleatorios
                 P[i].x = rand() % 10001;
                 P[i].y = rand() % 10001;
