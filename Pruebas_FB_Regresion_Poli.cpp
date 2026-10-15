@@ -7,6 +7,8 @@
 #include <ctime>
 #include <iomanip>
 #include <sys/time.h>
+#include <vector>
+#include <random>
 
 using namespace std;
 
@@ -14,6 +16,24 @@ using namespace std;
 struct Point {
     int x, y;
 };
+
+// Generación de puntos aleatorios
+vector<Point> generarPuntos(int n, int maxCoordenada = 10000)
+{
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<int> distribucion(0, maxCoordenada);
+
+    vector<Point> puntos(n);
+
+    for (int i = 0; i < n; i++)
+    {
+        puntos[i].x = distribucion(gen);
+        puntos[i].y = distribucion(gen);
+    }
+
+    return puntos;
+}
 
 // Calcular la distancia entre dos puntos
 double dist(Point p1, Point p2) {
@@ -40,10 +60,9 @@ double bruteForce(Point P[], int n) {
 }
 
 // Funcion para calcular la Regresion Polinomial
-void regresionPolinomial(double x[], double y[], int n,
-                         double coeficientes[]) {
+void regresionPolinomial(double x[], double y[], int n, double coeficientes[]) {
 
-    const int grado = 2;//Cambiar el grado para cambiar el grado del polinomio resultante <------- ESTE SI SE CAMBIA DEPENDIENDO DEL PROBLEMA
+    const int grado = 2;
 
     double matrix[grado+1][grado+1];
     double solutions[grado+1];
@@ -52,7 +71,7 @@ void regresionPolinomial(double x[], double y[], int n,
     double sumXY = 0;
 
     cout << "------------SISTEMA DE ECUACIONES-------------" << endl;
-    //Inicializamos el sistema de ecuaciones
+
     for (int i = 0; i < grado+1; ++i) {
         sumXY = 0;
 
@@ -64,7 +83,7 @@ void regresionPolinomial(double x[], double y[], int n,
 
         for (int j = 0; j < grado+1; ++j) {
             if (i == 0 && j == 0) {
-                matrix[i][j] = n; // Matriz
+                matrix[i][j] = n;
             } else {
                 sumX = 0;
 
@@ -82,9 +101,9 @@ void regresionPolinomial(double x[], double y[], int n,
     }
 
     cout << "-------------------GAUSS SEIDEL---------------------" << endl;
-    //Ahora resolvemos el sistema de ecuaciones con algun método conocido
+
     int size = grado + 1;
-    double EPSILON = 0.0000001;// error iterativo como tolerancia
+    double EPSILON = 0.0000001;
 
     double S[size];
     double OS[size];
@@ -97,7 +116,6 @@ void regresionPolinomial(double x[], double y[], int n,
     }
 
     bool errorCheck = false;
-
     int counter = 0;
 
     while(!errorCheck){
@@ -116,12 +134,13 @@ void regresionPolinomial(double x[], double y[], int n,
             E[i] = (S[i] - OS[i]);
         }
 
+        errorCheck = true;
+
         for(int i = 0; i < size; ++i){
             if (abs(E[i]) > EPSILON){
+                errorCheck = false;
                 break;
             }
-
-            errorCheck = true;
         }
 
         counter++;
@@ -131,20 +150,24 @@ void regresionPolinomial(double x[], double y[], int n,
         cout << " a" << i << ": " << S[i] << endl;
         coeficientes[i] = S[i];
     }
+
     cout << "it took " << counter << " times to terminate" << endl;
-    //-------------------Aqui termina GaussSeidel------------------------
 
     cout << "------------------POLINOMIO---------------" << endl;
 
     for (int i = size-1; i >= 1; --i){
         cout << S[i] << "X^" << i << " + ";
     }
+
     cout << S[0] << endl;
 
     cout << "------------------ERRORES------------------" << endl;
-    double e2[n];//Calcula el error para cada X
+
+    double e2[n];
+
     for (int i = 0; i < n; ++i){
         double Ycalculada = 0;
+
         for (int j = size-1; j >= 1; --j) {
             Ycalculada += S[j]*(pow(x[i], j));
         }
@@ -177,91 +200,89 @@ void regresionPolinomial(double x[], double y[], int n,
 }
 
 int main() {
-    srand(time(NULL));
-
     cout << fixed << setprecision(6);
 
-    ofstream archivo("resultados_fuerza_bruta_polinomio.csv"); //Creacion de archivo resultados
+    ofstream archivo("resultados_fuerza_bruta_polinomio.csv");
+
     if (!archivo.is_open()){
         cout << "No se pudo crear el archivo de resultados." << endl;
         return 1;
     }
 
-    archivo << fixed << setprecision(6);
+    archivo << fixed << setprecision(12);
     archivo << "Puntos,Pares examinados,Tiempo promedio (s),Distancia promedio\n";
 
-    double x[100]; //Arrays para guardar los datos para regrasion polinomial
+    double x[100];
     double y[100];
 
     int indice = 0;
 
-    for (int n = 10; n <= 1000; n += 10){ // tamaños de n
-        Point *P = new Point[n];
+    for (int n = 10; n <= 1000; n += 10){
 
         double sumaTiempos = 0;
         double sumaDistancia = 0;
 
-        for(int k = 0; k < 50; k++){ // Repetir el calculo de determinada cantidad de puntos
-            for(int i = 0; i < n; ++i){ // Creacion de puntos aleatorios
-                P[i].x = rand() % 10001;
-                P[i].y = rand() % 10001;
-            }
+        for(int k = 0; k < 50; k++){
+
+            // Generar puntos usando la nueva función
+            vector<Point> puntos = generarPuntos(n);
 
             struct timeval begin, end;
 
-            gettimeofday(&begin, 0); // <- Inicio de medicion del tiempo
+            gettimeofday(&begin, 0);
 
-            sumaDistancia += bruteForce(P, n);
+            double distancia = bruteForce(puntos.data(), n);
 
-            gettimeofday(&end, 0);// <- Fin de medicion de tiempo
+            gettimeofday(&end, 0);
 
-            // Calcular el tiempo transcurrido
             long seconds = end.tv_sec - begin.tv_sec;
             long microseconds = end.tv_usec - begin.tv_usec;
 
             double elapsed = seconds + microseconds * 1e-6;
 
-            sumaTiempos += elapsed; //Sumatoria de tiempos
+            sumaTiempos += elapsed;
+            sumaDistancia += distancia;
         }
 
-        double tiempoPromedio = sumaTiempos / 10; //Calculo de promedios
-        double distanciaPromedio = sumaDistancia / 10;
+        // Calcular los promedios de las 50 repeticiones
+        double tiempoPromedio = sumaTiempos / 50;
+        double distanciaPromedio = sumaDistancia / 50;
 
-        // Calcular cantidad de pares
         long long pares = 1LL * n * (n - 1) / 2;
 
-        x[indice] = n; // Introducir resultados en los arreglos para regresion
+        x[indice] = n;
         y[indice] = tiempoPromedio;
         indice++;
 
-        cout << n << "\t" // Muestra de datos
+        cout << n << "\t"
              << pares << "\t"
              << tiempoPromedio << "\t"
              << distanciaPromedio << endl;
 
-        archivo << n << "," // Introduccion de datos en el archivo
+        archivo << n << ","
                 << pares << ","
                 << tiempoPromedio << ","
                 << distanciaPromedio << "\n";
-
-        delete[] P; // Liberar memoria
     }
 
-    archivo.close(); // Cerrar archivo
+    archivo.close();
 
     double coeficientes[3];
-    regresionPolinomial(x, y, 100, coeficientes); // Llamada de la funcion
 
-    ofstream archivoRegresion("resultados_regresion_polinomial.csv"); // Creacion de archivo para regresión
+    regresionPolinomial(x, y, 100, coeficientes);
+
+    ofstream archivoRegresion("resultados_regresion_polinomial.csv");
+
     if (!archivoRegresion.is_open()) {
         cout << "No se pudo crear el archivo de regresion." << endl;
         return 1;
     }
 
-    archivoRegresion << fixed << setprecision(6);
+    archivoRegresion << fixed << setprecision(12);
     archivoRegresion << "Puntos,Tiempo estimado (s)\n";
 
-    for (int i = 0; i < 100; ++i){ // Meter datos de la regresion en el archivo .csv
+    for (int i = 0; i < 100; ++i){
+
         double tiempoEstimado =
             coeficientes[2] * x[i] * x[i] +
             coeficientes[1] * x[i] +
@@ -271,9 +292,9 @@ int main() {
                          << tiempoEstimado << "\n";
     }
 
-    archivoRegresion.close(); // Cerrar archivo
+    archivoRegresion.close();
 
-    cout<<"\n------Fin de las pruebas-------------"<<endl;
+    cout << "\n------Fin de las pruebas-------------" << endl;
 
     return 0;
 }
