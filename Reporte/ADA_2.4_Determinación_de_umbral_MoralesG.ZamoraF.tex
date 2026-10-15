@@ -1,0 +1,139 @@
+\documentclass[12pt]{article}
+
+% -----------------------
+% Paquetes de idioma y formato
+% -----------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{microtype}   % Mejora tipográfica
+\usepackage{booktabs}    % Tablas más profesionales
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{caption}     % Control de caption
+\usepackage{float}       % [H] placement
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usepackage{algorithmicx}
+
+\usepackage{natbib}
+\usepackage{forest}
+\usepackage{tikz}
+\usetikzlibrary{trees}
+
+% -----------------------
+% Tipografía y espaciado
+% -----------------------
+\usepackage{mathptmx}
+\usepackage{setspace}
+\onehalfspacing
+\setlength{\parskip}{8pt}
+
+% -----------------------
+% Encabezados
+% -----------------------
+\usepackage{fancyhdr}
+\setlength{\headheight}{14.5pt}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\rhead{\thepage}
+
+% -----------------------
+% Código fuente (listings)
+% -----------------------
+\usepackage{listings}
+\usepackage{xcolor}
+
+% -----------------------
+% Metadatos PDF (opcional)
+% -----------------------
+\usepackage[
+    hidelinks,
+    pdfauthor={Morales García, J. M., & Zamora Flores, D.},
+    pdftitle={ADA_2.4_Determinación_de_umbral_MoralesG.ZamoraF}
+]{hyperref}
+
+% -----------------------
+% Documento
+% -----------------------
+\begin{document}
+
+% Portada
+\begin{titlepage}
+\begin{center}
+
+\begin{minipage}{0.45\textwidth}
+    \centering
+    \includegraphics[width=0.8\textwidth]{Portada/Logo_IPN.png}
+\end{minipage}
+\hfill
+\begin{minipage}{0.45\textwidth}
+    \centering
+    \includegraphics[width=0.6\textwidth]{Portada/Logo_UPIIT.png}
+\end{minipage}
+
+\vspace{1.5cm}
+
+{\Large\bfseries Tarea 2.4\par}
+\vspace{0.5cm}
+{\LARGE\bfseries Determinación de Umbral\par}
+
+\vspace{1.5cm}
+
+{\large Instituto Politécnico Nacional\par}
+{\large Unidad Profesional Interdisciplinaria de Ingeniería
+Campus Tlaxcala\par}
+
+\vspace{1.8cm}
+
+\textbf{Integrante:}\\
+Morales García, José Miguel \\
+Zamora Flores, Daniel
+
+\vspace{0.5cm}
+
+\textbf{Curso:}\\
+D301 -- Análisis y Diseño de Algoritmos
+
+\vspace{0.5cm}
+
+\textbf{Profesor:}\\
+Escobar Juárez, Esaú Eliezer
+
+\vfill
+
+{\large 14 de octubre de 2026\par}
+
+\end{center}
+\end{titlepage}
+
+\section{Introducción}
+| Paso | Qué harás                                              | Programa que utilizarás                                            | Resultado que debes obtener                                   |
+| ---- | ------------------------------------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------- |
+| 1    | Generar puntos aleatorios.                             | Algoritmo de pares más cercanos.                                   | Un arreglo de puntos para las pruebas.                        |
+| 2    | Medir fuerza bruta y determinar \(h(n)\).              | Algoritmo de pares más cercanos y programa de medición de tiempos. | Tabla de tiempos y análisis de su crecimiento.                |
+| 3    | Medir la sección de combinación y determinar \(g(n)\). | Algoritmo de pares más cercanos y programa de medición de tiempos. | Tabla de tiempos de combinación y análisis de su crecimiento. |
+| 4    | Medir los tiempos para \(n=10,20,\ldots,1000\).        | Algoritmo de pares más cercanos modificado.                        | Tabla comparativa de fuerza bruta y divide y vencerás.        |
+| 5    | Determinar el umbral \(n_0\).                          | Resultados experimentales y análisis de los algoritmos.            | Un umbral justificado.                                        |
+| 6    | Comparar los algoritmos y elaborar la gráfica.         | Algoritmo original modificado para incorporar el umbral.           | Gráfica y conclusiones sobre el umbral.                       |
+
+\section{Generar puntos aleatorios}
+
+
+% -----------------------
+%Referencias
+% -----------------------
+\newpage
+%\addcontentsline{toc}{section}{Referencias}
+%\bibliographystyle{apalike}
+%\bibliography{referencias}
+
+\end{document}
