@@ -40,6 +40,8 @@ float medirCombinacion(const vector<Point> &puntos, float &tiempoNs);
 
 void regresionLineal(const vector<float> &x, const vector<float> &y, float &intercepto, float &pendiente, float &r2);
 
+void regresionPolinomial(const vector<float> &x,const vector<float> &y,double &a0,double &a1,double &a2,double &r2);
+
 // MAIN
 
 int main()
@@ -62,7 +64,8 @@ int main()
     // Encabezados del CSV.
     archivo << "n,repeticion,pares_examinados,"
             << "tiempo_fb_ns,tiempo_dv_ns,"
-            << "distancia_fb,distancia_dv\n";
+            << "distancia_fb,distancia_dv,"
+            << "tipo_regresion,a0,a1,a2,R2\n";
 
     archivo << setprecision(12);
 
@@ -136,7 +139,7 @@ int main()
                     << tiempoH << ','
                     << tiempoG << ','
                     << distanciaH << ','
-                    << distanciaG << '\n';
+                    << distanciaG << ",,,,,\n";
         }
 
         // Promedios de tiempo para el tamaño actual.
@@ -166,12 +169,13 @@ int main()
         return 1;
     }
 
-    float interceptoFB, pendienteFB, r2FB;
     float interceptoG, pendienteG, r2G;
 
-    regresionLineal(
-        valoresN, promediosH,
-        interceptoFB, pendienteFB, r2FB);
+    double a0, a1, a2, r2Polinomial;
+    
+    regresionPolinomial(
+        valoresN, promediosH, 
+        a0, a1, a2, r2Polinomial);
 
     regresionLineal(
         valoresN, promediosG,
@@ -179,13 +183,6 @@ int main()
 
     cout << "\n========== REGRESION LINEAL ==========\n";
     cout << "Modelo: y = a + b*n\n\n";
-
-    cout << "Fuerza bruta h(n):\n";
-    cout << "  a = " << interceptoFB << '\n';
-    cout << "  b = " << pendienteFB << '\n';
-    cout << "  h(n) = " << interceptoFB << " + ("
-         << pendienteFB << ")*n\n";
-    cout << "  R^2 = " << r2FB << "\n\n";
 
     cout << "Combinacion g(n):\n";
     cout << "  a = " << interceptoG << '\n';
@@ -196,6 +193,28 @@ int main()
 
     cout << "\nExperimentos finalizados.\n";
     cout << "Resultados guardados en resultados.csv\n";
+
+    cout << "\n========== REGRESION POLINOMIAL FB ==========\n";
+    cout << "Fuerza bruta: h(n) = a0 + a1*n + a2*n^2\n\n";
+    cout << "a0 = " << a0 << '\n';
+    cout << "a1 = " << a1 << '\n';
+    cout << "a2 = " << a2 << '\n';
+    cout << "h(n) = " << a0 << " + (" << a1 << ")*n + ("
+        << a2 << ")*n^2\n";
+    cout << "R^2 = " << r2Polinomial << '\n';
+
+    ofstream archivoRegresion("resultados.csv", ios::app);
+
+    if (archivoRegresion.is_open())
+    {
+        archivoRegresion << ",,,,,,,REGRESION_POLINOMIAL_FB,"
+                        << a0 << ',' 
+                        << a1 << ','
+                        << a2 << ',' 
+                        << r2Polinomial << '\n';
+
+        archivoRegresion.close();
+    }
 
     return 0;
 }
@@ -412,4 +431,134 @@ void regresionLineal(
     r2 = (st > 0.0L)
              ? static_cast<float>(1.0L - sr / st)
              : numeric_limits<float>::quiet_NaN();
+}
+
+// Regresion polinomial
+void regresionPolinomial(
+    const vector<float> &x,
+    const vector<float> &y,
+    double &a0,
+    double &a1,
+    double &a2,
+    double &r2)
+{
+    const int grado = 2;
+    const int size = grado + 1;
+
+    int n = static_cast<int>(x.size());
+
+    if (n != static_cast<int>(y.size()) || n < size)
+    {
+        cerr << "Error: datos insuficientes para la regresion polinomial.\n";
+        a0 = a1 = a2 = r2 = numeric_limits<double>::quiet_NaN();
+        return;
+    }
+
+    double maxX = *max_element(x.begin(), x.end());
+
+    if (maxX == 0.0)
+    {
+        cerr << "Error: no se puede normalizar x.\n";
+        a0 = a1 = a2 = r2 = numeric_limits<double>::quiet_NaN();
+        return;
+    }
+
+    double matrix[size][size] = {};
+    double solutions[size] = {};
+    double S[size] = {};
+    double OS[size] = {};
+    double E[size] = {};
+
+    // Construir el sistema usando x normalizada.
+    for (int i = 0; i < size; i++)
+    {
+        for (int k = 0; k < n; k++)
+        {
+            double xn = x[k] / maxX;
+
+            solutions[i] += pow(xn, i) * y[k];
+        }
+
+        for (int j = 0; j < size; j++)
+        {
+            for (int k = 0; k < n; k++)
+            {
+                double xn = x[k] / maxX;
+
+                matrix[i][j] += pow(xn, i + j);
+            }
+        }
+    }
+
+    // Resolver el sistema mediante Gauss-Seidel.
+    const double EPSILON = 0.0000001;
+    const int MAX_ITERACIONES = 100000;
+
+    bool errorCheck = false;
+    int counter = 0;
+
+    while (!errorCheck && counter < MAX_ITERACIONES)
+    {
+        for (int i = 0; i < size; i++)
+        {
+            double suma = 0.0;
+
+            for (int j = 0; j < size; j++)
+            {
+                if (j != i)
+                    suma += matrix[i][j] * S[j];
+            }
+
+            OS[i] = S[i];
+            S[i] = (solutions[i] - suma) / matrix[i][i];
+            E[i] = S[i] - OS[i];
+        }
+
+        // Comprobar todos los errores antes de terminar.
+        errorCheck = true;
+
+        for (int i = 0; i < size; i++)
+        {
+            if (abs(E[i]) > EPSILON)
+            {
+                errorCheck = false;
+                break;
+            }
+        }
+
+        counter++;
+    }
+
+    if (!errorCheck)
+    {
+        cerr << "Error: Gauss-Seidel no convergio.\n";
+        a0 = a1 = a2 = r2 = numeric_limits<double>::quiet_NaN();
+        return;
+    }
+
+    // Convertir los coeficientes a la escala original de n.
+    a0 = S[0];
+    a1 = S[1] / maxX;
+    a2 = S[2] / (maxX * maxX);
+
+    // Calcular el coeficiente de determinacion R^2.
+    double promedioY = 0.0;
+    double sr = 0.0;
+    double st = 0.0;
+
+    for (int i = 0; i < n; i++)
+        promedioY += y[i];
+
+    promedioY /= n;
+
+    for (int i = 0; i < n; i++)
+    {
+        double estimada = a0 + a1 * x[i] + a2 * x[i] * x[i];
+
+        sr += pow(y[i] - estimada, 2);
+        st += pow(y[i] - promedioY, 2);
+    }
+
+    r2 = (st > 0.0) ? 1.0 - sr / st
+                    : numeric_limits<double>::quiet_NaN();
 }
